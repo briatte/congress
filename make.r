@@ -7,5 +7,7 @@ library(network)  # network manipulation
 dir.create("data"  , showWarnings = FALSE)
 dir.create("plots" , showWarnings = FALSE)
 
-source("data.r")
-source("build.r")
+source("data.r")  # data collection
+source("build.r") # network construction
+
+# have a nice day
