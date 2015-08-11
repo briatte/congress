@@ -18,7 +18,7 @@ The `data.r` script exports cosponsorships as CSV edge lists instead of adjacenc
 
 The `build.r` script builds networks similar to those built by Gross, Kirkland and Shalizi's “Cosponsorship in the U.S. Senate” paper, using the same weighting scheme (the weighted propensity to cosponsor) for edges. Here are two example graphs showing the 110th Congress at two different edge weight thresholds:
 
-![](plots/hr110.png)![](plots/se110.png)
+![](demo/hr110.png)![](demo/se110.png)
 
 Node colors show party affiliations (Democrats in light blue, Republicans in light red, independents in light green), and placement is Fruchterman-Reingold force-directed. It should be very easy to play with the `network` objects produced by `build.r` to produce different plots, including plots suited for [interactive visualization](http://f.briatte.org/parlviz/).
 
