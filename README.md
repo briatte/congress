@@ -32,4 +32,4 @@ The two separate scripts in the `modularity` folder will compute and plot the pa
 
 The code will also compare empirical modularity to modularity in randomly rewired graphs with identical degree distributions, and empirical modularity to modularity from a randomised partition vector, like [Kirkland](https://jhkirkla.wordpress.com/2012/11/28/hypothesis-testing-for-group-structure-in-legislative-networks/) suggests. That part of the code is particularly slow if you keep it at 1,000 simulations per network like the code does by default.
 
-Please feel free to [open an issue](/issues) if you have comments or suggestions.
+Please feel free to [open an issue](https://github.com/briatte/congress/issues) if you have comments or suggestions.
