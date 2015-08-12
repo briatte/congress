@@ -4,18 +4,18 @@ meta = c(
   "se" = "Senate",
   "type-hr" = "Lower",
   "type-se" = "Upper",
-  "ipu-hr" = 2339,
-  "ipu-se" = 2340,
-  "seats-hr" = 435,
-  "seats-se" = 100
+  "ipu-hr" = 2339, # Inter-Parliamentary Union identifier
+  "ipu-se" = 2340, # Inter-Parliamentary Union identifier
+  "seats-hr" = 435, # statutory chamber size
+  "seats-se" = 100  # statutory chamber size
 )
 
-for (jj in unique(b$chamber)) {
+for (ii in unique(b$congress) %>% as.character %>% as.integer %>% sort) {
 
-  for (ii in 107) { # unique(b$legislature) %>% sort
+  for (jj in unique(b$chamber) %>% sort) {
 
     cat(meta[ jj ], ii)
-    data = filter(b, chamber == jj, legislature == ii, n_au > 1)
+    data = filter(b, chamber == jj, congress == ii, n_au > 1)
     sp = filter(s, mandate == jj) %>% data.frame
 
     # find terms corresponding to congressional session and those before
@@ -75,7 +75,7 @@ for (jj in unique(b$chamber)) {
     cat(":", nrow(data), "cosponsored bills, ")
 
     # bill dates to years
-    data$date = substr(data$date, 1, 4)
+    data$date = substr(data$date, 1, 4) %>% as.integer
 
     # ==========================================================================
     # DIRECTED EDGE LIST
@@ -143,14 +143,15 @@ for (jj in unique(b$chamber)) {
     n = network(edges[, 1:2 ], directed = TRUE)
 
     n %n% "country" = meta[ "cty" ] %>% as.character
-    n %n% "years" = paste0(min(data$date), "-", max(data$date)) %>% as.character
-    n %n% "legislature" = ii
+    n %n% "years" = paste0(min(data$date, na.rm = TRUE), "-",
+                           min(data$date, na.rm = TRUE) + 1) %>% as.character
+    n %n% "congress" = ii
     n %n% "chamber" = meta[ jj ] %>% as.character
     n %n% "type" = meta[ paste0("type-", jj) ] %>% as.character
     n %n% "ipu" = meta[ paste0("ipu-", jj) ] %>% as.integer
     n %n% "seats" = meta[ paste0("seats-", jj) ] %>% as.integer
     n %n% "n_cosponsored" = nrow(data)
-    n %n% "n_sponsors" = table(filter(b, chamber == jj, legislature == ii)$n_au)
+    n %n% "n_sponsors" = table(filter(b, chamber == jj, congress == ii)$n_au)
 
     # ==========================================================================
     # VERTEX-LEVEL ATTRIBUTES
@@ -172,7 +173,8 @@ for (jj in unique(b$chamber)) {
     n %v% "sex" = sp[ network.vertex.names(n), "sex" ]
     n %v% "born" = sp[ network.vertex.names(n), "born" ]
     n %v% "party" = sp[ network.vertex.names(n), "party" ]
-    n %v% "constituency" = sp[ network.vertex.names(n), "constituency" ]
+    n %v% "state" = sp[ network.vertex.names(n), "state" ]
+    n %v% "district" = sp[ network.vertex.names(n), "district" ]
     n %v% "nyears" = sp[ network.vertex.names(n), "nyears" ]
 
     set.edge.attribute(n, "source", as.character(edges[, 1]))
@@ -186,7 +188,7 @@ for (jj in unique(b$chamber)) {
     set.edge.attribute(n, "gsw", edges$gsw) # Gross-Shalizi weights
 
     # ==========================================================================
-    # SAVE OBJECTS
+    # SAVE NETWORK OBJECTS
     # ==========================================================================
 
     assign(paste0("net_us_",  jj, ii), n)
@@ -194,28 +196,32 @@ for (jj in unique(b$chamber)) {
     assign(paste0("bills_us_", jj, ii), data)
 
     # ==========================================================================
-    # PLOT SUBSET
+    # PLOT STRONG TIES
     # ==========================================================================
 
     if (jj == "hr")
-      nn = delete.edges(n, which(n %e% "gsw" < .45))
+      delete.edges(n, which(n %e% "gsw" < .45))
 
     if (jj == "se")
-      nn = delete.edges(n, which(n %e% "gsw" < .1))
+      delete.edges(n, which(n %e% "gsw" < .15))
 
-    nn %v% "color" = "grey25" # the few other parties
-    nn %v% "color" = ifelse(nn %v% "party" == "REP", "tomato", nn %v% "color")
-    nn %v% "color" = ifelse(nn %v% "party" == "DEM", "steelblue", nn %v% "color")
-    nn %v% "color" = ifelse(nn %v% "party" == "IND", "palegreen", nn %v% "color")
+    n %v% "color" = "grey25" # the few other parties
+    n %v% "color" = ifelse(n %v% "party" == "REP", "firebrick", n %v% "color")
+    n %v% "color" = ifelse(n %v% "party" == "DEM", "royalblue", n %v% "color")
+    n %v% "color" = ifelse(n %v% "party" == "IND", "forestgreen", n %v% "color")
 
     png(paste0("plots/", jj, str_pad(ii, 3, pad = "0"), ".png"),
         width = 600, height = 600)
-    plot(nn, vertex.col = n %v% "color", vertex.border = n %v% "color",
+    plot(n, vertex.col = n %v% "color", vertex.border = n %v% "color",
          edge.col = "grey50",
-         main = paste(nn %n% "chamber", nn %n% "legislature", "\nWPC >",
-                      ifelse(jj == "hr", "0.45", "0.1")))
+         main = paste(n %n% "chamber", n %n% "congress",
+                      paste0("(", min(data$date, na.rm = TRUE), "–",
+                             min(data$date, na.rm = TRUE) + 1, ")"),
+                      "\nWPC ≥", ifelse(jj == "hr", "0.45", "0.15")))
     dev.off()
 
   }
 
 }
+
+save(list = ls(pattern = "^(bills|edges|net)_us"), file = "data/net_us.rda")

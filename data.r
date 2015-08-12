@@ -2,7 +2,7 @@
 # BILLS PARSER
 # ==============================================================================
 
-for (i in 113:93) {
+for (i in 114:93) {
 
   cat("Congress", i)
   f = paste0("data/bills-", i, ".zip")
@@ -19,7 +19,7 @@ for (i in 113:93) {
 
     cat(" : parsing", length(z), "bills...\n") # slow but avoids unzipping
     b = data_frame()
-    skipped = c()
+    s = c()
 
     pb = txtProgressBar(0, length(z), style = 3)
     for (j in z) {
@@ -43,7 +43,7 @@ for (i in 113:93) {
 
       } else {
 
-        skipped = c(j, skipped)
+        s = c(j, s)
 
       }
 
@@ -51,8 +51,8 @@ for (i in 113:93) {
 
     }
 
-    if (length(skipped) > 0)
-      cat("\nCongress", i, ": skipped", length(skipped), "sponsor-less bills\n")
+    if (length(s) > 0)
+      cat("\nCongress", i, ": skipped", length(s), "sponsor-less bill(s)\n")
 
     write.csv(b, d, row.names = FALSE)
 
@@ -70,10 +70,10 @@ for (i in 113:93) {
 # ==============================================================================
 
 b = data_frame()
-for (i in list.files("data", pattern = "csv$", full.names = TRUE)) {
+for (i in list.files("data", pattern = "bills-\\d+\\.csv$", full.names = TRUE)) {
 
   x = read.csv(i, colClasses = "character", stringsAsFactors = FALSE)
-  b = rbind(b, cbind(legislature = gsub("\\D", "", i), x))
+  b = rbind(b, cbind(congress = gsub("\\D", "", i), x))
 
 }
 
@@ -89,7 +89,7 @@ b$n_au = 2 + str_count(b$cosponsors, ";")
 b$n_au[ is.na(b$cosponsors) ] = 1
 
 table(b$n_au > 1)
-table(b$n_au > 1) %>% prop.table # ~ 70% cosponsored
+table(b$n_au > 1) %>% prop.table # ~ 2/3 cosponsored
 
 # ==============================================================================
 # SPONSORS PARSER
@@ -116,14 +116,18 @@ for (x in d) {
                          suffix = ifelse(is.null(name$suffix), NA, name$suffix),
                          born = bio$birthday, sex = bio$gender))
 
+  z = sapply(x$terms, function(x) {
+    ifelse(is.null(x$district), NA, x$district)
+  })
+
   z = data_frame(mandate = sapply(x$terms, function(x) x$type), # rep or sen
                  start = sapply(x$terms, function(x) x$start),
                  end = sapply(x$terms, function(x) x$end),
                  party = sapply(x$terms, function(x) x$party),
-                 constituency = sapply(x$terms, function(x) x$state))
+                 state = sapply(x$terms, function(x) x$state),
+                 district = z)
 
   s_c = rbind(s_c, cbind(y, z, row.names = NULL))
-  # sapply(x$terms, function(x) x$district) # NULL for Senators
 
 }
 
@@ -152,14 +156,18 @@ for (x in d) {
                          suffix = ifelse(is.null(name$suffix), NA, name$suffix),
                          born, sex = bio$gender))
 
+  z = sapply(x$terms, function(x) {
+    ifelse(is.null(x$district), NA, x$district)
+  })
+
   z = data_frame(mandate = sapply(x$terms, function(x) x$type), # rep or sen
                  start = sapply(x$terms, function(x) x$start),
                  end = sapply(x$terms, function(x) x$end),
                  party = sapply(x$terms, function(x) x$party),
-                 constituency = sapply(x$terms, function(x) x$state))
+                 state = sapply(x$terms, function(x) x$state),
+                 district = z)
 
   s_h = rbind(s_h, cbind(y, z, row.names = NULL))
-  # sapply(x$terms, function(x) x$district) # NULL for sen
 
 }
 
@@ -178,6 +186,3 @@ table(s$party, exclude = NULL)
 
 s$born = substr(s$born, 1, 4)
 table(s$born, exclude = NULL)
-
-# states (not normalized)
-table(s$constituency, exclude = NULL)
