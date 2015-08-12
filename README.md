@@ -1,5 +1,7 @@
 This repository creates U.S. Congress bill cosponsorship network data similar to that of [Fowler, Waugh and Sohn][fws], ranging from 1973 to today in both chambers. The code mimicks the code used for the [parlnet](https://github.com/briatte/parlnet) project, which builds legislative cosponsorship networks for European countries.
 
+Static plots of the networks are viewable on [that page](http://f.briatte.org/parlviz/congress/plots.html).
+
 # HOWTO
 
 Replicate by running `make.r` in R after checking the dependencies at the top of the script.
@@ -16,10 +18,10 @@ The `data.r` script exports cosponsorships as CSV edge lists instead of adjacenc
 - `sponsor`: the THOMAS identifier of the bill sponsor (bills without a THOMAS identifier for their sponsors, i.e. a very small number of committee bills, are ignored during parsing and are not included in the edge lists);
 - `cosponsors` and `withdrawn`: the THOMAS identifiers of the bill cosponsors, separated by semicolons; the `withdrawn` column contains the identifiers for withdrawn sponsors, who might have cosponsored the bill again and might therefore also appear in the `cosponsors` list
 
-The `build.r` script builds networks similar to those built by Gross, Kirkland and Shalizi's “Cosponsorship in the U.S. Senate” paper, using the same weighting scheme (the weighted propensity to cosponsor) for edges. Here are two example graphs showing the 110th Congress at two different edge weight thresholds:
+The `build.r` script weights the network ties by using Gross, Kirkland and Shalizi's [weighted propensity to cosponsor](http://www.latinodecisions.com/files/4013/3840/2978/Gross-Kirkland-Shalizi_Multilevel-Cosponsorship_PolAnlys-submission.pdf), which is useful for subsetting the plots to a certain tie intensity. Below are two example graphs showing the 113rd Congress at two different edge weight thresholds:
 
-![](demo/hr110.png)![](demo/se110.png)
+![](http://f.briatte.org/parlviz/congress/plots/hr113.png)![](http://f.briatte.org/parlviz/congress/plots/se113.png)
 
-Node colors show party affiliations (Democrats in light blue, Republicans in light red, independents in light green), and placement is Fruchterman-Reingold force-directed. It should be very easy to play with the `network` objects produced by `build.r` to produce different plots, including plots suited for [interactive visualization](http://f.briatte.org/parlviz/).
+Node colors show party affiliations (Democrats in blue, Republicans in red, independents in green), and placement is Fruchterman-Reingold force-directed. It should be very easy to play with the `network` objects produced by `build.r` to produce different plots, including plots suited for [interactive visualization](http://f.briatte.org/parlviz/).
 
 [fws]: http://jhfowler.ucsd.edu/cosponsorship.htm
