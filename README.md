@@ -1,4 +1,4 @@
-This repository creates U.S. Congress bill cosponsorship network data similar to that of [Fowler, Waugh and Sohn][fws], ranging from 1973 to today in both chambers. The code mimicks the code used for the [parlnet](https://github.com/briatte/parlnet) project, which builds legislative cosponsorship networks for European countries.
+This repository creates U.S. Congress bill cosponsorship networks data similar to that of [Fowler, Waugh and Sohn][fws], ranging from 1973 to today in both chambers. The code mimicks the code used for the [parlnet](https://github.com/briatte/parlnet) project, which builds legislative cosponsorship networks for European countries.
 
 Static plots of the networks are viewable on [that page](http://f.briatte.org/parlviz/congress/plots.html).
 
